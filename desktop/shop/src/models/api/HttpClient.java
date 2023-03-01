@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -80,8 +81,75 @@ public class HttpClient {
         }
         return text;
     }
-    private String tryConvertInputStreamToString(InputStream inputStream) 
-            throws UnsupportedEncodingException {
+
+    public String put(String urlStr, String data, HashMap<String, String> headers)
+    {
+        String text;
+        try {
+            text = tryPut(urlStr,data,headers);
+        } catch (IOException e) {
+            text= "Hiba! A PUT müvelet nem sikerült a REST API-n!";
+            System.out.println(text);
+        }
+        return text;
+
+    }
+
+    public String tryPut(String urlStr, String data, HashMap<String, String> headers) throws IOException
+    {
+        URL url = new URL(urlStr);
+        HttpURLConnection http = (HttpURLConnection) url.openConnection();
+        http.setRequestMethod("PUT");
+        
+        for( Map.Entry<String, String> entry : headers.entrySet()) {
+            http.setRequestProperty(entry.getKey(), entry.getValue());
+        }
+        
+        http.setDoOutput(true);
+        byte[] dataArray = data.getBytes();
+        OutputStream outputStream = http.getOutputStream();
+        outputStream.write(dataArray);
+        outputStream.close();
+        
+        this.responseCode = http.getResponseCode();
+        InputStream inputStream = http.getInputStream();
+        String text = convertInputStreamToString(inputStream);
+        return text;
+    }
+   
+    public String delete(String urlStr,HashMap<String, String> headers)
+    {
+        String text;
+        try {
+            text = trydelete(urlStr, headers);
+        } catch (IOException e) {
+            text = "Hiba! A DELETE müvelet nem sikerült a REST APIn kerszetül";
+            System.out.println(text);
+        }
+        return text;
+    }
+
+    public String trydelete(String urlStr,HashMap<String, String> headers) throws IOException
+    {
+        URL url = new URL(urlStr);
+        HttpURLConnection http = (HttpURLConnection) url.openConnection();
+        http.setRequestMethod("POST");
+        
+        for( Map.Entry<String, String> entry : headers.entrySet()) {
+            http.setRequestProperty(entry.getKey(), entry.getValue());
+        }
+        
+        http.setDoOutput(true);
+
+        this.responseCode = http.getResponseCode();
+        InputStream inputStream = http.getInputStream();
+        String text = convertInputStreamToString(inputStream);
+
+        return text;
+    }
+
+    private String tryConvertInputStreamToString(InputStream inputStream)throws UnsupportedEncodingException 
+    {
         StringBuilder stringBuilder = new StringBuilder();
         final Reader reader = new InputStreamReader(inputStream, "UTF-8");
         Scanner scanner = new Scanner(reader);
@@ -92,7 +160,8 @@ public class HttpClient {
         return stringBuilder.toString();
     }
 
-    public int getResponseCode() {
+    public int getResponseCode()
+    {
         return responseCode;
     }
     

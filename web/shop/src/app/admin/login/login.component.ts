@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { AuthService } from '../shared/auth.service';
+import { AuthService } from '../../shared/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -33,6 +33,9 @@ export class LoginComponent implements OnInit {
         console.log(data.name)
         localStorage.setItem('token', data.token);
         localStorage.setItem('name', data.name);
+        //remember me pipa, akkor ez nem kell
+        this.loginForm.patchValue({email: ""});
+        this.loginForm.patchValue({password: ""});
       },
       error: err => {
         console.log('Hiba! Az azonosítás sikertelen!')

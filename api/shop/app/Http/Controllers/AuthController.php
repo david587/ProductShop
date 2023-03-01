@@ -7,6 +7,7 @@ use \App\Http\Controllers\BaseController as BaseController;
 use Validator;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\User as UserResource;
 
 class AuthController extends BaseController {
 
@@ -55,5 +56,46 @@ class AuthController extends BaseController {
         auth( "sanctum" )->user()->currentAccessToken()->delete();
 
         return response()->json( "Sikeres kijelentkezés" );
+    }
+
+    public function index()
+    {
+        $users = User::all();
+        return $this->sendResponse( UserResource::collection( $users ));
+    }
+
+    public function create(Request $request){
+        $this->signUp($request);
+    }
+
+    public function update( Request $request, $id ) {
+
+        $input = $request->all();
+        $validator = Validator::make( $input, [
+
+            "name" => "required",
+            "email" => "required",
+            "password" => "required",
+            "confirm_password" => "required|same:password",
+        ]);
+
+        if( $validator->fails() ) {
+
+            return $this-sendError( $validator, "Hiba" );
+        }
+
+        $user = User::find( $id );
+        $input[ "password" ] = bcrypt( $input[ "password" ]);
+        $user->update( $input );
+        
+        return $this->sendResponse( new UserResource( $user ));
+    }
+
+    public function destroy($id)
+    {
+        $user = User::find($id);
+        $user->delete();
+
+        return $this->sendResponse(new UserResource($user));
     }
 }
